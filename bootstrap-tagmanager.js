@@ -258,8 +258,8 @@
       }
     };
 
-    var pushTag = function (tag, objToPush, isValid) {
-      if (!tag || (!isValid) || tag.length <= 0) return;
+    var pushTag = function (tag) {
+      if (!tag || tag.length <= 0) return;
 
       if(tagManagerOptions.onlyTagList){
         if (tagManagerOptions.typeaheadSource != null) {
@@ -342,6 +342,12 @@
       obj.val("");
     };
 
+    var completeEditedTag = function(obj) {
+        var user_input = jQuery(obj).val(); //user_input = jQuery().inArray(delimeters[p]);
+        user_input = trimTag(user_input);
+        pushTag(user_input);
+    };
+
     var initialize = function () {
       if (tagManagerOptions.AjaxPushAllTags) {
         obj.on('tags:refresh', pushAllTags);
@@ -366,7 +372,7 @@
             popTag();
             break;
           case "pushTag":
-            pushTag(tagToManipulate, null, true);
+            pushTag(tagToManipulate);
             break;
         }
         return;
@@ -429,6 +435,9 @@
 
         if (tagManagerOptions.preventSubmitOnEnter) {
           if (e.which == 13) {
+            // complete current input as tag
+            completeEditedTag(this);
+            // prevent default behaviour
             e.cancelBubble = true;
             e.returnValue = false;
             e.stopPropagation();
@@ -443,9 +452,7 @@
         if (!isKeyInList && (- 1 != p)) {
           //user just entered a valid delimeter
           tagIsValid = true;
-          var user_input = jQuery(this).val(); //user_input = jQuery().inArray(delimeters[p]);
-          user_input = trimTag(user_input);
-          pushTag(user_input, e.data, tagIsValid);
+          completeEditedTag(this);
           e.preventDefault();
           // console.log("pushTag: keypress");
         }
@@ -520,7 +527,7 @@
             if (queuedTag == jQuery(this).val() && queuedTag == user_input) {
               isClear = true;
             } else {
-              pushTag(user_input, null, true);
+              pushTag(user_input);
               queuedTag = user_input;
               // console.log('Handler for .change() called, typeahead value pushed:' + queuedTag);
             }
@@ -534,9 +541,7 @@
           }
         } else {
           // console.log('change: typeaheadIsVisible is NOT visible');
-          var user_input = jQuery(this).val(); //user_input = jQuery().inArray(delimeters[p]);
-          user_input = trimTag(user_input);
-          pushTag(user_input, null, true);
+          completeEditedTag(this);
           // console.log("pushTag: change ");
         }
 
@@ -566,10 +571,9 @@
           }
 
           if (push) {
+            // TODO: check tagIsValid?
             // console.log('lost focus');
-            var user_input = jQuery(this).val(); //user_input = jQuery().inArray(delimeters[p]);
-            user_input = trimTag(user_input);
-            pushTag(user_input, null, tagIsValid);
+            completeEditedTag(this);
             // console.log("pushTag: blur");
           }
 
@@ -582,14 +586,14 @@
           var pta = tagManagerOptions.prefilled;
           jQuery.each(pta, function (key, val) {
             var a = 1;
-            pushTag(val, obj, true);
+            pushTag(val);
           });
         } else if (typeof (tagManagerOptions.prefilled) == "string") {
           var pta = tagManagerOptions.prefilled.split(',');
 
           jQuery.each(pta, function (key, val) {
             var a = 1;
-            pushTag(val, obj, true);
+            pushTag(val);
           });
 
         }
